@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11']
+        python-version: ["3.12"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,7 +21,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo 'export PATH="$HOME/.local/bin:$PATH"' >> $GITHUB_ENV
       - name: Install dependencies
-        run: echo "Installing dependencies"
+        run: |
+          poetry install
+        env:
+          POETRY_VIRTUALENVS_CREATE: false
       - name: Run tests
-        run: echo "Running tests"
+        run: |
+          poetry run pytest tests/
