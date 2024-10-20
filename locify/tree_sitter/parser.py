@@ -11,9 +11,9 @@ from locify.utils.file import read_text
 # warnings.simplefilter('ignore', category=FutureWarning)
 
 ParsedTag = namedtuple(
-    'ParsedTag',
-    ('rel_path', 'abs_path', 'start_line', 'node_name', 'tag_kind')
+    'ParsedTag', ('rel_path', 'abs_path', 'start_line', 'node_name', 'tag_kind')
 )
+
 
 class TagKind(Enum):
     DEF = 'def'
@@ -21,27 +21,32 @@ class TagKind(Enum):
 
 
 class TreeSitterParser:
-    
     def __init__(self) -> None:
         pass
-    
+
     def get_tags_from_file(self, abs_path: str, rel_path: str) -> list[ParsedTag]:
         lang = filename_to_lang(abs_path)
-        if not lang: return []
-        
+        if not lang:
+            return []
+
         ts_language = get_language(lang)
         ts_parser = get_parser(lang)
-        
-        tags_file_path = Path('locify/tree_sitter/queries') / f'tree-sitter-{lang}-tags.scm'
-        if not tags_file_path.exists(): return []
+
+        tags_file_path = (
+            Path('locify/tree_sitter/queries') / f'tree-sitter-{lang}-tags.scm'
+        )
+        if not tags_file_path.exists():
+            return []
         tags_query = tags_file_path.read_text()
 
-        if not Path(abs_path).exists(): return []
+        if not Path(abs_path).exists():
+            return []
         code = read_text(abs_path)
-        if not code: return []
-        
+        if not code:
+            return []
+
         parsed_tree = ts_parser.parse(bytes(code, 'utf-8'))
-        
+
         # Run the tags queries
         query = ts_language.query(tags_query)
         captures = query.captures(parsed_tree.root_node)
@@ -55,16 +60,16 @@ class TreeSitterParser:
             else:
                 # Skip other tags
                 continue
-            
+
             result_tag = ParsedTag(
                 rel_path=rel_path,
                 abs_path=abs_path,
                 start_line=node.start_point[0],
-                node_name=node.text.decode('utf-8'), # node_name is defined in the query file
-                tag_kind=tag_kind
+                node_name=node.text.decode(
+                    'utf-8'
+                ),  # node_name is defined in the query file
+                tag_kind=tag_kind,
             )
             parsed_tags.append(result_tag)
-        
-        return parsed_tags
 
-        
+        return parsed_tags

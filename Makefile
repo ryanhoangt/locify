@@ -17,3 +17,10 @@ install-pre-commit-hooks:
 	@git config --unset-all core.hooksPath || true
 	@poetry run pre-commit install --config $(PRE_COMMIT_CONFIG_PATH)
 	@echo "$(GREEN)Pre-commit hooks installed successfully.$(RESET)"
+
+lint-python:
+	@echo "$(YELLOW)Running linters...$(RESET)"
+	@poetry run pre-commit run --files locify/**/* tests/**/* --show-diff-on-failure --config $(PRE_COMMIT_CONFIG_PATH)
+
+lint:
+	@$(MAKE) -s lint-python
