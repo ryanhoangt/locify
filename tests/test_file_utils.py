@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from git import Repo
 
-from locify.utils.file import GitRepoUtils
+from locify.utils.file import GitRepoUtils, read_text
 
 
 @pytest.fixture
@@ -121,3 +121,21 @@ def test_empty_directory(git_utils, temp_git_repo):
     
     files = git_utils.get_absolute_tracked_files_in_directory("empty_dir")
     assert len(files) == 0
+    
+
+def test_read_text_with_regular_file(tmp_path):
+    # Test reading a regular text file
+    test_file = tmp_path / "test.txt"
+    content = "Hello, World!"
+    test_file.write_text(content)
+    
+    result = read_text(str(test_file))
+    assert result == content
+
+def test_read_text_with_image_file(tmp_path):
+    # Test reading an image file (should return empty string)
+    image_file = tmp_path / "test.jpg"
+    image_file.write_bytes(b"fake image content")
+    
+    result = read_text(str(image_file))
+    assert result == ""

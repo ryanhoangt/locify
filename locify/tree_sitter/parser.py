@@ -6,7 +6,7 @@ from pathlib import Path
 from grep_ast import filename_to_lang
 from tree_sitter_languages import get_language, get_parser
 
-from locify.utils.path import has_image_extension
+from locify.utils.file import read_text
 
 # warnings.simplefilter('ignore', category=FutureWarning)
 
@@ -37,7 +37,7 @@ class TreeSitterParser:
         tags_query = tags_file_path.read_text()
 
         if not Path(abs_path).exists(): return []
-        code = self.read_text(abs_path)
+        code = read_text(abs_path)
         if not code: return []
         
         parsed_tree = ts_parser.parse(bytes(code, 'utf-8'))
@@ -66,11 +66,5 @@ class TreeSitterParser:
             parsed_tags.append(result_tag)
         
         return parsed_tags
-        
-    def read_text(self, abs_path: str) -> str:
-        if has_image_extension(abs_path):
-            return '' # Not support image files yet!
-        
-        with open(abs_path, 'r') as f:
-            return f.read()
+
         

@@ -55,23 +55,6 @@ def test_get_tags_from_unsupported_file(parser, tmp_path):
     )
     assert tags == []
 
-def test_read_text_with_regular_file(parser, tmp_path):
-    # Test reading a regular text file
-    test_file = tmp_path / "test.txt"
-    content = "Hello, World!"
-    test_file.write_text(content)
-    
-    result = parser.read_text(str(test_file))
-    assert result == content
-
-def test_read_text_with_image_file(parser, tmp_path):
-    # Test reading an image file (should return empty string)
-    image_file = tmp_path / "test.jpg"
-    image_file.write_bytes(b"fake image content")
-    
-    result = parser.read_text(str(image_file))
-    assert result == ""
-
 def test_get_tags_from_java_file(parser, tmp_path):
     # Create a temporary Java file
     java_file = tmp_path / "Test.java"
