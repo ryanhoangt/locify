@@ -56,9 +56,9 @@ def test_init_invalid_repo(tmp_path):
         GitRepoUtils(str(invalid_path))
     assert "Could not find git repository" in str(exc_info.value)
 
-def test_get_all_tracked_files(git_utils):
+def test_get_all_abs_tracked_files(git_utils):
     """Test getting all tracked files."""
-    tracked_files = git_utils.get_all_tracked_files()
+    tracked_files = git_utils.get_all_absolute_tracked_files()
     
     # Check if all expected files are present
     expected_files = {
@@ -67,42 +67,50 @@ def test_get_all_tracked_files(git_utils):
         "test_dir/file3.txt",
         "test_dir/file4.txt"
     }
+    # Convert to absolute paths
+    expected_files = {str(git_utils.repo_path / file) for file in expected_files}
     assert set(tracked_files) == expected_files
     
     # Verify that unstaged and untracked files are not included
-    assert "unstaged.txt" not in tracked_files
+    assert str(git_utils.repo_path / "unstaged.txt") not in tracked_files
 
-def test_get_all_staged_files(git_utils):
+def test_get_all_abs_staged_files(git_utils):
     """Test getting all staged files."""
-    staged_files = git_utils.get_all_staged_files()
+    staged_files = git_utils.get_all_absolute_staged_files()
     
     # Only staged.txt should be in the staged files list
-    assert "staged.txt" in staged_files
-    assert "file1.txt" not in staged_files  # Already committed
-    assert "unstaged.txt" not in staged_files  # Not staged
+    assert str(git_utils.repo_path / "staged.txt") in staged_files
+    assert str(git_utils.repo_path / "file1.txt") not in staged_files
+    assert str(git_utils.repo_path / "unstaged.txt") not in staged_files
 
-def test_get_tracked_files_in_directory(git_utils):
+def test_get_abs_tracked_files_in_directory(git_utils):
     """Test getting tracked files in a specific directory."""
     # Test files in test_dir
-    test_dir_files = git_utils.get_tracked_files_in_directory("test_dir")
+    test_dir_files = git_utils.get_absolute_tracked_files_in_directory("test_dir")
     expected_files = {"test_dir/file3.txt", "test_dir/file4.txt"}
+    # Convert to absolute paths
+    expected_files = {str(git_utils.repo_path / file) for file in expected_files}
     assert set(test_dir_files) == expected_files
     
     # Test files in root directory (should be empty when specifying a non-existent directory)
-    nonexistent_dir_files = git_utils.get_tracked_files_in_directory("nonexistent")
+    nonexistent_dir_files = git_utils.get_absolute_tracked_files_in_directory("nonexistent")
     assert len(nonexistent_dir_files) == 0
 
-def test_get_tracked_files_in_directory_with_trailing_slash(git_utils):
+def test_get_abs_tracked_files_in_directory_with_trailing_slash(git_utils):
     """Test getting tracked files in a directory with trailing slash."""
-    test_dir_files = git_utils.get_tracked_files_in_directory("test_dir/")
+    test_dir_files = git_utils.get_absolute_tracked_files_in_directory("test_dir/")
     expected_files = {"test_dir/file3.txt", "test_dir/file4.txt"}
+    # Convert to absolute paths
+    expected_files = {str(git_utils.repo_path / file) for file in expected_files}
     assert set(test_dir_files) == expected_files
 
-def test_get_tracked_files_in_subdirectory(git_utils):
+def test_get_abs_tracked_files_in_subdirectory(git_utils):
     """Test getting tracked files in a subdirectory."""
     # Test files in test_dir
-    test_dir_files = git_utils.get_tracked_files_in_directory("test_dir")
+    test_dir_files = git_utils.get_absolute_tracked_files_in_directory("test_dir")
     expected_files = {"test_dir/file3.txt", "test_dir/file4.txt"}
+    # Convert to absolute paths
+    expected_files = {str(git_utils.repo_path / file) for file in expected_files}
     assert set(test_dir_files) == expected_files
 
 def test_empty_directory(git_utils, temp_git_repo):
@@ -111,5 +119,5 @@ def test_empty_directory(git_utils, temp_git_repo):
     empty_dir = temp_git_repo / "empty_dir"
     empty_dir.mkdir()
     
-    files = git_utils.get_tracked_files_in_directory("empty_dir")
+    files = git_utils.get_absolute_tracked_files_in_directory("empty_dir")
     assert len(files) == 0
