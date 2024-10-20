@@ -1,6 +1,4 @@
-
-
-class FullSummaryMap:
+class FullMapStrategy:
     
     def __init__(self) -> None:
         pass
