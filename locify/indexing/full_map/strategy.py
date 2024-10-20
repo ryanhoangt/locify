@@ -22,9 +22,7 @@ class FullMapStrategy:
         self.ts_parser = TreeSitterParser()
 
     def get_map(self, rel_dir_path: str = '') -> str:
-        ranked_tags = self.get_ranked_tags(rel_dir_path)
-        # for tag in ranked_tags:
-        #     print(tag)
+        ranked_tags = self.get_ranked_tags(rel_dir_path=rel_dir_path)
         tree_repr = self.tag_list_to_tree(ranked_tags)
         return tree_repr
 
