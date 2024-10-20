@@ -14,6 +14,7 @@ python = "^3.12"
 litellm = "^1.50.0"
 tree-sitter = "0.21.3"
 grep-ast = "0.3.3"
+gitpython = "*"
 
 
 [tool.poetry.group.tests.dependencies]
