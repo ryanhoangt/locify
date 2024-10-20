@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from reponav.utils.path import PathUtils
+from locify.utils.path import PathUtils
 
 
 @pytest.fixture
