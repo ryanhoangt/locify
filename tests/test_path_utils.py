@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from locify.utils.path import PathUtils
+from locify.utils.path import PathUtils, has_image_extension
 
 
 @pytest.fixture
@@ -36,3 +36,6 @@ def test_get_absolute_path_str_with_non_existing_path(path_utils):
 def test_get_relative_path_str_with_non_project_path(path_utils):
     with pytest.raises(ValueError):
         path_utils.get_relative_path_str("/home/user/other_project/file.py")
+        
+def test_has_image_extension_png():
+    assert has_image_extension("some/dir/image.png") is True
