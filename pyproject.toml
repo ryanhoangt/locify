@@ -20,6 +20,13 @@ gitpython = "*"
 [tool.poetry.group.tests.dependencies]
 pytest = "^8.3.3"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.7.0"
+pre-commit = "^4.0.1"
+
 [build-system]
-requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+requires = [
+  "poetry-core",
+]
