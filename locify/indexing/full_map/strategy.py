@@ -44,12 +44,6 @@ class FullMapStrategy:
         else:
             all_abs_files = self.git_utils.get_all_absolute_tracked_files(depth=depth)
 
-        ident2defrels = defaultdict(
-            set
-        )  # symbol identifier -> set of its definitions' relative file paths
-        ident2refrels = defaultdict(
-            list
-        )  # symbol identifier -> list of its references' relative file paths
         identwrel2tags = defaultdict(
             set
         )  # (relative file, symbol identifier) -> set of its tags
@@ -60,13 +54,7 @@ class FullMapStrategy:
 
             for parsed_tag in parsed_tags:
                 if parsed_tag.tag_kind == TagKind.DEF:
-                    ident2defrels[parsed_tag.node_name].add(rel_file)
                     identwrel2tags[(rel_file, parsed_tag.node_name)].add(parsed_tag)
-                if parsed_tag.tag_kind == TagKind.REF:
-                    ident2refrels[parsed_tag.node_name].append(rel_file)
-
-        # all_idents = set(ident2defrels.keys()) | set(ident2refrels.keys())
-        # print(all_idents)
 
         # Sort tags by relative file path and tag's line number
         all_tags: list[ParsedTag] = []
@@ -94,8 +82,6 @@ class FullMapStrategy:
                     lois = []
                 elif cur_rel_file:  # No line of interest
                     output += '\n' + cur_rel_file + ':\n'
-
-                cur_rel_file = tag.rel_path
 
                 cur_abs_file = tag.abs_path
                 cur_rel_file = tag.rel_path
