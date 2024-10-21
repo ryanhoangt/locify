@@ -32,4 +32,4 @@ jobs:
           POETRY_VIRTUALENVS_CREATE: false
       - name: Run tests
         run: |
-          poetry run pytest tests/
+          poetry run pytest ./tests/unit
