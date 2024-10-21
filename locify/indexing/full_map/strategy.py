@@ -21,20 +21,28 @@ class FullMapStrategy:
         self.path_utils = PathUtils(root)
         self.ts_parser = TreeSitterParser()
 
-    def get_map(self, rel_dir_path: str = '') -> str:
-        ranked_tags = self.get_ranked_tags(rel_dir_path)
-        # for tag in ranked_tags:
-        #     print(tag)
+    def get_map(self, depth: int | None = None, rel_dir_path: str | None = None) -> str:
+        ranked_tags = self.get_ranked_tags(rel_dir_path=rel_dir_path, depth=depth)
         tree_repr = self.tag_list_to_tree(ranked_tags)
         return tree_repr
 
-    def get_ranked_tags(self, rel_dir_path: str = '') -> list[ParsedTag]:
+    def get_map_with_token_count(
+        self, depth: int | None = None, rel_dir_path: str | None = None
+    ) -> str:
+        tree_repr = self.get_map(depth=depth, rel_dir_path=rel_dir_path)
+        token_count = get_token_count_from_text(self.model_name, tree_repr)
+        return f'{tree_repr}\n\nToken count: {token_count}'
+
+    def get_ranked_tags(
+        self, depth: int | None = None, rel_dir_path: str | None = None
+    ) -> list[ParsedTag]:
         if rel_dir_path:
             all_abs_files = self.git_utils.get_absolute_tracked_files_in_directory(
-                rel_dir_path
+                rel_dir_path=rel_dir_path,
+                depth=depth,
             )
         else:
-            all_abs_files = self.git_utils.get_all_absolute_tracked_files()
+            all_abs_files = self.git_utils.get_all_absolute_tracked_files(depth=depth)
 
         ident2defrels = defaultdict(
             set
@@ -75,7 +83,10 @@ class FullMapStrategy:
         lois: list[int] = []
         output = ''
 
-        for tag in tags:
+        dummy_tag = ParsedTag(
+            abs_path='', rel_path='', node_name='', tag_kind=TagKind.DEF, start_line=0
+        )
+        for tag in tags + [dummy_tag]:  # Add dummy tag to trigger last file output
             if tag.rel_path != cur_rel_file:
                 if lois:
                     output += cur_rel_file + ':\n'
@@ -118,10 +129,3 @@ class FullMapStrategy:
         context.add_context()
         res = context.format()
         return res
-
-
-if __name__ == '__main__':
-    strategy = FullMapStrategy(root='.')
-    full_map = strategy.get_map()
-    print(f'Summary map: {full_map}')
-    print(f'Num of tokens: {get_token_count_from_text(strategy.model_name, full_map)}')
