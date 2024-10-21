@@ -29,19 +29,26 @@ pip install locify
 Locify offers a CLI to execute mapping strategies:
 
 ```bash
-python -m locify.cli <strategy> [options]
+python -m locify.cli <strategy> get_map_with_token_count [options]
 ```
 
 - `<strategy>`: Choose between `fullmap` and `repomap`.
-- `[options]`: Additional options for customizing the mapping process.
+- `[options]`: Additional options for customizing the mapping process, e.g. file's depth, or
+  specific directories only.
 
 ### Example
 
-To generate a full map of a codebase:
+- To generate a full map of a codebase:
 
-```bash
-python -m locify.cli fullmap get_map_with_token_count --root /path/to/gitrepo
-```
+    ```bash
+    python -m locify.cli fullmap get_map_with_token_count  --root /path/to/gitrepo
+    ```
+
+- To generate a full map of the `locify` directory only, with maximum depth of 3:
+
+    ```bash
+    python -m locify.cli fullmap get_map_with_token_count 3 locify
+    ```
 
 ## Development
 
