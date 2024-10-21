@@ -19,6 +19,7 @@ networkx = "*"
 numpy = "*"
 pandas = "*"
 scipy = "*"
+fire = "*"
 
 
 [tool.poetry.group.tests.dependencies]

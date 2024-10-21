@@ -21,17 +21,24 @@ class FullMapStrategy:
         self.path_utils = PathUtils(root)
         self.ts_parser = TreeSitterParser()
 
-    def get_map(self, rel_dir_path: str | None = None, depth: int | None = None) -> str:
+    def get_map(self, depth: int | None = None, rel_dir_path: str | None = None) -> str:
         ranked_tags = self.get_ranked_tags(rel_dir_path=rel_dir_path, depth=depth)
         tree_repr = self.tag_list_to_tree(ranked_tags)
         return tree_repr
 
+    def get_map_with_token_count(
+        self, depth: int | None = None, rel_dir_path: str | None = None
+    ) -> str:
+        tree_repr = self.get_map(depth=depth, rel_dir_path=rel_dir_path)
+        token_count = get_token_count_from_text(self.model_name, tree_repr)
+        return f'{tree_repr}\n\nToken count: {token_count}'
+
     def get_ranked_tags(
-        self, rel_dir_path: str | None = None, depth: int | None = None
+        self, depth: int | None = None, rel_dir_path: str | None = None
     ) -> list[ParsedTag]:
         if rel_dir_path:
             all_abs_files = self.git_utils.get_absolute_tracked_files_in_directory(
-                rel_dir_path,
+                rel_dir_path=rel_dir_path,
                 depth=depth,
             )
         else:
@@ -122,10 +129,3 @@ class FullMapStrategy:
         context.add_context()
         res = context.format()
         return res
-
-
-if __name__ == '__main__':
-    strategy = FullMapStrategy(root='.')
-    full_map = strategy.get_map(depth=3)
-    print(f'Summary map: {full_map}')
-    print(f'Num of tokens: {get_token_count_from_text(strategy.model_name, full_map)}')

@@ -5,7 +5,6 @@ import networkx as nx
 
 from locify.indexing.full_map.strategy import FullMapStrategy
 from locify.tree_sitter.parser import ParsedTag, TagKind
-from locify.utils.llm import get_token_count_from_text
 
 
 class RepoMapStrategy(FullMapStrategy):
@@ -14,14 +13,14 @@ class RepoMapStrategy(FullMapStrategy):
 
     def get_ranked_tags(
         self,
-        rel_dir_path: str | None = None,
         depth: int | None = None,
+        rel_dir_path: str | None = None,
         mentioned_rel_files: set | None = None,
         mentioned_idents: set | None = None,
     ) -> list[ParsedTag]:
         if rel_dir_path:
             all_abs_files = self.git_utils.get_absolute_tracked_files_in_directory(
-                rel_dir_path,
+                rel_dir_path=rel_dir_path,
                 depth=depth,
             )
         else:
@@ -133,10 +132,3 @@ class RepoMapStrategy(FullMapStrategy):
         # Note: Sort the tags by file path and line number can destroy the pagerank order
         # ranked_tags.sort(key=lambda tag: (tag.rel_path, tag.start_line))
         return ranked_tags
-
-
-if __name__ == '__main__':
-    strategy = RepoMapStrategy(root='.')
-    full_map = strategy.get_map()
-    print(f'Summary map: {full_map}')
-    print(f'Num of tokens: {get_token_count_from_text(strategy.model_name, full_map)}')
