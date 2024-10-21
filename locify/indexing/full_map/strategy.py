@@ -73,7 +73,10 @@ class FullMapStrategy:
         lois: list[int] = []
         output = ''
 
-        for tag in tags:
+        dummy_tag = ParsedTag(
+            abs_path='', rel_path='', node_name='', tag_kind=TagKind.DEF, start_line=0
+        )
+        for tag in tags + [dummy_tag]:
             if tag.rel_path != cur_rel_file:
                 if lois:
                     output += cur_rel_file + ':\n'
