@@ -14,16 +14,18 @@ class RepoMapStrategy(FullMapStrategy):
 
     def get_ranked_tags(
         self,
-        rel_dir_path: str = '',
+        rel_dir_path: str | None = None,
+        depth: int | None = None,
         mentioned_rel_files: set | None = None,
         mentioned_idents: set | None = None,
     ) -> list[ParsedTag]:
         if rel_dir_path:
             all_abs_files = self.git_utils.get_absolute_tracked_files_in_directory(
-                rel_dir_path
+                rel_dir_path,
+                depth=depth,
             )
         else:
-            all_abs_files = self.git_utils.get_all_absolute_tracked_files()
+            all_abs_files = self.git_utils.get_all_absolute_tracked_files(depth=depth)
         num_files = len(all_abs_files)
         if mentioned_rel_files is None:
             mentioned_rel_files = set()
@@ -58,7 +60,6 @@ class RepoMapStrategy(FullMapStrategy):
                     ident2refrels[parsed_tag.node_name].append(rel_file)
 
         all_idents = set(ident2defrels.keys()).intersection(set(ident2refrels.keys()))
-        # print(all_idents)
 
         G = nx.MultiDiGraph()
         for ident in all_idents:
@@ -125,7 +126,7 @@ class RepoMapStrategy(FullMapStrategy):
                         node_name='NO_NAME',
                         rel_path=src_rel_file,
                         abs_path=self.path_utils.get_absolute_path_str(src_rel_file),
-                        start_line=0,
+                        start_line=-1,
                     )
                 )
 

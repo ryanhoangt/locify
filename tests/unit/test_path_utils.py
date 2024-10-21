@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from locify.utils.path import PathUtils, has_image_extension
+from locify.utils.path import PathUtils, get_depth_of_rel_path, has_image_extension
 
 
 @pytest.fixture
@@ -48,3 +48,11 @@ def test_get_relative_path_str_with_non_project_path(path_utils):
 
 def test_has_image_extension_png():
     assert has_image_extension('some/dir/image.png') is True
+
+
+def test_get_depth_of_rel_path():
+    assert get_depth_of_rel_path('folder/subfolder/file.txt') == 3
+    assert get_depth_of_rel_path('folder/file.txt') == 2
+    assert get_depth_of_rel_path('file.txt') == 1
+    assert get_depth_of_rel_path('') == 0
+    assert get_depth_of_rel_path('folder/subfolder/subsubfolder/') == 3
