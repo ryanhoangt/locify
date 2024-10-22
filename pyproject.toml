@@ -11,7 +11,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.12"
-litellm = "^1.50.0"
+litellm = "*"
 tree-sitter = "0.21.3"
 grep-ast = "0.3.3"
 gitpython = "*"
