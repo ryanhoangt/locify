@@ -52,7 +52,7 @@ python -m locify.cli <strategy> get_map_with_token_count [options]
 - To generate a full map of a codebase:
 
     ```bash
-    python -m locify.cli fullmap get_map_with_token_count  --root /path/to/gitrepo
+    python -m locify.cli fullmap get_map_with_token_count --root /path/to/gitrepo
     ```
 
 - To generate a full map of the `locify` directory only, with maximum depth of 3:

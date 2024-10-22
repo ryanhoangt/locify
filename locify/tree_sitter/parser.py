@@ -33,7 +33,7 @@ class TreeSitterParser:
         ts_parser = get_parser(lang)
 
         tags_file_path = (
-            Path('locify/tree_sitter/queries') / f'tree-sitter-{lang}-tags.scm'
+            Path(__file__).resolve().parent / 'queries' / f'tree-sitter-{lang}-tags.scm'
         )
         if not tags_file_path.exists():
             return []
