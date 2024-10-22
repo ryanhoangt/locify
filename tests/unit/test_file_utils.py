@@ -154,6 +154,66 @@ def test_empty_directory(git_utils, temp_git_repo):
     assert len(files) == 0
 
 
+def test_get_tracked_files_tree_full(git_utils):
+    """Test generating a full tracked files tree without depth restriction."""
+    tree_output = git_utils.get_tracked_files_tree()
+
+    # Expected tree structure
+    expected_output = """\
+├── file1.txt
+├── file2.txt
+└── test_dir
+    ├── file3.txt
+    └── file4.txt
+"""
+    assert tree_output == expected_output
+
+
+def test_get_tracked_files_tree_with_depth(git_utils):
+    """Test generating a tracked files tree with a depth limit of 1."""
+    tree_output = git_utils.get_tracked_files_tree(depth=1)
+
+    # Expected tree structure with depth 1 (only root-level files and directories)
+    expected_output = """\
+├── file1.txt
+├── file2.txt
+└── test_dir
+"""
+    assert tree_output == expected_output
+
+
+def test_get_tracked_files_tree_in_subdirectory(git_utils):
+    """Test generating a tracked files tree in a specific subdirectory."""
+    tree_output = git_utils.get_tracked_files_tree(rel_dir_path='test_dir')
+
+    # Expected tree structure including the rel_dir_path
+    expected_output = """\
+└── test_dir
+    ├── file3.txt
+    └── file4.txt
+"""
+    assert tree_output == expected_output
+
+
+def test_get_tracked_files_tree_in_empty_directory(git_utils, temp_git_repo):
+    """Test generating a tracked files tree in an empty directory."""
+    empty_dir = temp_git_repo / 'empty_dir'
+    empty_dir.mkdir()
+
+    tree_output = git_utils.get_tracked_files_tree(rel_dir_path='empty_dir')
+
+    # No files should be listed
+    assert tree_output == ''
+
+
+def test_get_tracked_files_tree_in_nonexistent_directory(git_utils):
+    """Test generating a tracked files tree in a nonexistent directory."""
+    tree_output = git_utils.get_tracked_files_tree(rel_dir_path='nonexistent')
+
+    # No files should be listed as the directory doesn't exist
+    assert tree_output == ''
+
+
 def test_read_text_with_regular_file(tmp_path):
     # Test reading a regular text file
     test_file = tmp_path / 'test.txt'
