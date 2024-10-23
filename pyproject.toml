@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "locify"
-version = "0.0.1"
+version = "0.0.2"
 description = "A library for navigating over large codebases."
 authors = ["Hoang Tran <descience.thh10@gmail.com>"]
 license = "MIT"
@@ -11,7 +11,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.12"
-litellm = "^1.50.0"
+litellm = "*"
 tree-sitter = "0.21.3"
 grep-ast = "0.3.3"
 gitpython = "*"

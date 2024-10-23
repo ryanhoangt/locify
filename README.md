@@ -1,4 +1,15 @@
-# Locify 🔎 [![PyPI](https://img.shields.io/pypi/pyversions/locify.svg?style=plastic)](https://github.com/ryanhoangt/locify)
+# Locify 🔎
+
+<!--- BADGES: START --->
+[![PyPI - Python Versions](https://img.shields.io/pypi/pyversions/locify.svg?logo=pypi&style=plastic)][#pypi-package]
+[![PyPI - Package Version](https://img.shields.io/pypi/v/locify?logo=pypi&style=plastic&color=orange)][#pypi-package]
+[![GitHub - License](https://img.shields.io/github/license/ryanhoangt/locify?logo=github&style=plastic&color=green)][#github-license]
+[![Docs - GitHub.io](https://img.shields.io/static/v1?logo=github&style=plastic&color=pink&label=docs&message=locify)][#docs-package]
+
+[#github-license]: https://github.com/ryanhoangt/locify/blob/main/LICENSE
+[#pypi-package]: https://pypi.org/project/locify/
+[#docs-package]: https://ryanhoangt.github.io/locify/
+<!--- BADGES: END --->
 
 *Locify* is a library designed to help LLM-based agents navigate and analyze large codebases efficiently. It leverages parsing techniques to provide insights into code structure and relationships.
 
@@ -41,7 +52,7 @@ python -m locify.cli <strategy> get_map_with_token_count [options]
 - To generate a full map of a codebase:
 
     ```bash
-    python -m locify.cli fullmap get_map_with_token_count  --root /path/to/gitrepo
+    python -m locify.cli fullmap get_map_with_token_count --root /path/to/gitrepo
     ```
 
 - To generate a full map of the `locify` directory only, with maximum depth of 3:
