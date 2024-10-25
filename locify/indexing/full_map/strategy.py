@@ -31,6 +31,10 @@ class FullMapStrategy:
         self.path_utils = PathUtils(root)
         self.ts_parser = TreeSitterParser()
 
+        # Caching
+        self.file_context_cache: dict = {}  # (rel_file) -> {'context': TreeContext_obj, 'mtime': mtime})
+        self.rendered_tree_cache: dict = {}  # (rel_file, lois, mtime) -> rendered_tree
+
     def tags_to_tree(self, parsed_tags: list[ParsedTag]) -> str:
         num_tags = len(parsed_tags)
         lower_bound, upper_bound = 0, num_tags
@@ -134,25 +138,39 @@ class FullMapStrategy:
         return output
 
     def render_tree(self, abs_file: str, rel_file: str, lois: list) -> str:
-        code = read_text(abs_file) or ''
-        if not code.endswith('\n'):
-            code += '\n'
+        mtime = self.git_utils.get_modified_time(abs_file)
+        tree_cache_key = (rel_file, tuple(sorted(lois)), mtime)
+        if tree_cache_key in self.rendered_tree_cache:
+            return self.rendered_tree_cache[tree_cache_key]
 
-        context = TreeContext(
-            filename=rel_file,
-            code=code,
-            color=False,
-            line_number=True,
-            child_context=False,
-            last_line=False,
-            margin=0,
-            mark_lois=False,
-            loi_pad=0,
-            # header_max=30,
-            show_top_of_file_parent_scope=False,
-        )
+        if (
+            rel_file not in self.file_context_cache
+            or self.file_context_cache[rel_file]['mtime'] < mtime
+        ):
+            code = read_text(abs_file) or ''
+            if not code.endswith('\n'):
+                code += '\n'
 
+            context = TreeContext(
+                filename=rel_file,
+                code=code,
+                color=False,
+                line_number=True,
+                child_context=False,
+                last_line=False,
+                margin=0,
+                mark_lois=False,
+                loi_pad=0,
+                # header_max=30,
+                show_top_of_file_parent_scope=False,
+            )
+            self.file_context_cache[rel_file] = {'context': context, 'mtime': mtime}
+        else:
+            context = self.file_context_cache[rel_file]['context']
+
+        context.lines_of_interest = set()
         context.add_lines_of_interest(lois)
         context.add_context()
         res = context.format()
+        self.rendered_tree_cache[tree_cache_key] = res
         return res

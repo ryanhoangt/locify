@@ -126,6 +126,9 @@ class GitRepoUtils:
         tree = build_tree(list(tracked_files))
         return build_tree_string(tree)
 
+    def get_modified_time(self, abs_path: str) -> int:
+        return int(Path(abs_path).stat().st_mtime)
+
 
 def read_text(abs_path: str) -> str:
     if has_image_extension(abs_path):
