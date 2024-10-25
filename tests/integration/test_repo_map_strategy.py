@@ -106,11 +106,15 @@ def test_repo_map_strategy_get_ranked_tags_with_refs(setup_git_repo_with_refs):
     # Ensure the token count is a reasonable positive integer
     assert token_count > 0
 
-    expected_map = """test_file1.py:
+    repo_content_prefix = strategy.content_prefix
+    expected_map = (
+        repo_content_prefix
+        + """test_file1.py:
   1│def foo():
 ...⋮...
   4│def bar():
 ...⋮...
 test_file2.py:
 ...⋮..."""
+    )
     assert repo_map == expected_map
