@@ -65,7 +65,7 @@ class FullMapStrategy:
         ranked_tags = self.get_ranked_tags(rel_dir_path=rel_dir_path, depth=depth)
         tree_repr = self.tags_to_tree(ranked_tags)
         # print(f'Getting map took {time.time() - t0:.2f}s')
-        return tree_repr
+        return self.content_prefix + tree_repr
 
     def get_map_with_token_count(
         self, depth: int | None = None, rel_dir_path: str | None = None
