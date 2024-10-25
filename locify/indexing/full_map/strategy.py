@@ -2,7 +2,9 @@ from collections import defaultdict
 from pathlib import Path
 
 from grep_ast import TreeContext
+from tqdm import tqdm
 
+from locify.indexing.prompts import Prompts
 from locify.tree_sitter.parser import ParsedTag, TagKind, TreeSitterParser
 from locify.utils.file import GitRepoUtils, read_text
 from locify.utils.llm import get_token_count_from_text
@@ -10,20 +12,59 @@ from locify.utils.path import PathUtils
 
 
 class FullMapStrategy:
-    def __init__(self, model_name='gpt-4o', root='./') -> None:
+    def __init__(
+        self,
+        model_name='gpt-4o',
+        root='./',
+        max_map_token=1024 * 3,
+        content_prefix=Prompts.repo_content_prefix,
+    ) -> None:
         if not Path(root).is_absolute():
             root = str(Path(root).resolve())
 
         self.root = root
         self.model_name = model_name
+        self.max_map_token = max_map_token
+        self.content_prefix = content_prefix
 
         self.git_utils = GitRepoUtils(root)
         self.path_utils = PathUtils(root)
         self.ts_parser = TreeSitterParser()
 
+    def tags_to_tree(self, parsed_tags: list[ParsedTag]) -> str:
+        num_tags = len(parsed_tags)
+        lower_bound, upper_bound = 0, num_tags
+        best_tree_token_count = 0
+
+        # Assume each tag has 16 tokens on average, this trick is to deal with repos with lots of tags and using the exact middle as the starting point is too slow
+        mid = min(self.max_map_token // 16, num_tags) // 2
+        while lower_bound < upper_bound:
+            tree_repr = self.tag_list_to_tree(parsed_tags[:mid])
+            token_count = get_token_count_from_text(self.model_name, tree_repr)
+
+            if (
+                token_count <= self.max_map_token
+                and token_count > best_tree_token_count
+            ):
+                best_tree_token_count = token_count
+
+            if token_count > self.max_map_token:
+                upper_bound = mid
+            else:
+                lower_bound = mid + 1
+
+            mid = (lower_bound + upper_bound) // 2
+
+        result_tags = parsed_tags[:mid]
+        # Sort by relative file path and tag's line number
+        result_tags.sort(key=lambda tag: (tag.rel_path, tag.start_line))
+        return self.tag_list_to_tree(result_tags)
+
     def get_map(self, depth: int | None = None, rel_dir_path: str | None = None) -> str:
+        # t0 = time.time()
         ranked_tags = self.get_ranked_tags(rel_dir_path=rel_dir_path, depth=depth)
-        tree_repr = self.tag_list_to_tree(ranked_tags)
+        tree_repr = self.tags_to_tree(ranked_tags)
+        # print(f'Getting map took {time.time() - t0:.2f}s')
         return tree_repr
 
     def get_map_with_token_count(
@@ -48,7 +89,7 @@ class FullMapStrategy:
             set
         )  # (relative file, symbol identifier) -> set of its tags
 
-        for abs_file in all_abs_files:
+        for abs_file in tqdm(all_abs_files, desc='Parsing tags', unit='file'):
             rel_file = self.path_utils.get_relative_path_str(abs_file)
             parsed_tags = self.ts_parser.get_tags_from_file(abs_file, rel_file)
 

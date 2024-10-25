@@ -2,14 +2,22 @@ import math
 from collections import Counter, defaultdict
 
 import networkx as nx
+from tqdm import tqdm
 
 from locify.indexing.full_map.strategy import FullMapStrategy
+from locify.indexing.prompts import Prompts
 from locify.tree_sitter.parser import ParsedTag, TagKind
 
 
 class RepoMapStrategy(FullMapStrategy):
-    def __init__(self, model_name='gpt-4o', root='./') -> None:
-        super().__init__(model_name, root)
+    def __init__(
+        self,
+        model_name='gpt-4o',
+        root='./',
+        max_map_token=1024 * 3,
+        content_prefix=Prompts.repo_content_prefix,
+    ) -> None:
+        super().__init__(model_name, root, max_map_token, content_prefix)
 
     def get_ranked_tags(
         self,
@@ -43,7 +51,7 @@ class RepoMapStrategy(FullMapStrategy):
         personalization_dict = {}
         personalization_val = 100 / num_files
 
-        for abs_file in all_abs_files:
+        for abs_file in tqdm(all_abs_files, desc='Parsing tags', unit='file'):
             rel_file = self.path_utils.get_relative_path_str(abs_file)
 
             if rel_file in mentioned_rel_files:
