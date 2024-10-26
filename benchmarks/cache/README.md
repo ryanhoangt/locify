@@ -36,7 +36,6 @@ Below are benchmark results between cache vs. no cache for some methods in imple
 
 [![warmup_vs_subsequent](./../../benchmarks/plots/cache_warmup_analysis.png)](warmup_vs_subsequent.png)
 
-
 ## Compare warmup call vs. subsequent calls, 5 runs with tags cache enabled
 
 ### Detailed Statistics for full depth with tags cache
