@@ -240,3 +240,35 @@ def test_read_text_with_image_file(tmp_path):
 
     result = read_text(str(image_file))
     assert result == ''
+
+
+@pytest.fixture
+def temp_git_repo_in_subdir(tmp_path):
+    """Create a temporary git repository inside a subdirectory."""
+    # Create the parent directory and the subdirectory
+    parent_dir = tmp_path / 'parent_dir'
+    sub_dir = parent_dir / 'sub_repo'
+    sub_dir.mkdir(parents=True)
+
+    # Initialize git repo in the subdirectory
+    repo = Repo.init(sub_dir)
+
+    # Create some test files in the subdirectory
+    (sub_dir / 'file1.txt').write_text('content1')
+    (sub_dir / 'file2.txt').write_text('content2')
+
+    # Stage and commit initial files
+    repo.index.add(['file1.txt', 'file2.txt'])
+    repo.index.commit('Initial commit in subdirectory repo')
+
+    return parent_dir
+
+
+def test_init_with_subdirectory_repo(temp_git_repo_in_subdir):
+    """Test initialization with a Git repository in a subdirectory."""
+    # Initialize GitRepoUtils with the subdirectory repo
+    utils = GitRepoUtils(str(temp_git_repo_in_subdir))
+
+    # Check that repo_path is set correctly to the subdirectory
+    assert utils.repo_path == Path(temp_git_repo_in_subdir) / 'sub_repo'
+    assert utils.repo is not None
