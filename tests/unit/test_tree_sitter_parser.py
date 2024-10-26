@@ -92,3 +92,81 @@ def test_get_tags_from_empty_file(parser, tmp_path):
         str(empty_file.absolute()), str(empty_file.relative_to(tmp_path))
     )
     assert tags == []
+
+
+def test_get_tags_with_imports(parser, tmp_path):
+    python_file_1 = tmp_path / 'module1.py'
+    python_content_1 = """
+def greet():
+    print("Hello from module 1!")
+"""
+    python_file_1.write_text(python_content_1)
+
+    python_file_2 = tmp_path / 'module2.py'
+    python_content_2 = """
+from module1 import greet
+
+def main():
+    greet()
+"""
+    python_file_2.write_text(python_content_2)
+
+    # Get tags from both files
+    tags_file_1 = parser.get_tags_from_file(
+        str(python_file_1.absolute()), str(python_file_1.relative_to(tmp_path))
+    )
+    tags_file_2 = parser.get_tags_from_file(
+        str(python_file_2.absolute()), str(python_file_2.relative_to(tmp_path))
+    )
+
+    # Verify we got tags for the definition in module1.py
+    def_tags = [tag for tag in tags_file_1 if tag.tag_kind == TagKind.DEF]
+    assert any(tag.node_name == 'greet' for tag in def_tags)
+
+    # Verify we got reference tags in module2.py
+    ref_tags = [tag for tag in tags_file_2 if tag.tag_kind == TagKind.REF]
+    assert any(tag.node_name == 'greet' for tag in ref_tags)
+
+
+def test_get_tags_with_class_and_imports(parser, tmp_path):
+    python_file_1 = tmp_path / 'module1.py'
+    python_content_1 = """
+class Greeter:
+    def greet(self):
+        print("Hello from Greeter!")
+
+    def farewell(self):
+        print("Goodbye from Greeter!")
+"""
+    python_file_1.write_text(python_content_1)
+
+    python_file_2 = tmp_path / 'module2.py'
+    python_content_2 = """
+from module1 import Greeter
+
+def main():
+    greeter = Greeter()
+    greeter.greet()
+    greeter.farewell()
+"""
+    python_file_2.write_text(python_content_2)
+
+    # Get tags from both files
+    tags_file_1 = parser.get_tags_from_file(
+        str(python_file_1.absolute()), str(python_file_1.relative_to(tmp_path))
+    )
+    tags_file_2 = parser.get_tags_from_file(
+        str(python_file_2.absolute()), str(python_file_2.relative_to(tmp_path))
+    )
+
+    # Verify we got tags for the class and method definitions in module1.py
+    def_tags = [tag for tag in tags_file_1 if tag.tag_kind == TagKind.DEF]
+    assert any(tag.node_name == 'Greeter' for tag in def_tags)
+    assert any(tag.node_name == 'greet' for tag in def_tags)
+    assert any(tag.node_name == 'farewell' for tag in def_tags)
+
+    # Verify we got reference tags in module2.py for the class and methods
+    ref_tags = [tag for tag in tags_file_2 if tag.tag_kind == TagKind.REF]
+    assert any(tag.node_name == 'Greeter' for tag in ref_tags)
+    assert any(tag.node_name == 'greet' for tag in ref_tags)
+    assert any(tag.node_name == 'farewell' for tag in ref_tags)
