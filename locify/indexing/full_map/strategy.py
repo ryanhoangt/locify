@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from locify.indexing.prompts import Prompts
 from locify.tree_sitter.parser import ParsedTag, TagKind, TreeSitterParser
+from locify.utils.chat_history import get_file_mentions, get_identifier_mentions
 from locify.utils.file import GitRepoUtils, get_modified_time, read_text
 from locify.utils.llm import get_token_count_from_text
 from locify.utils.path import PathUtils
@@ -64,23 +65,48 @@ class FullMapStrategy:
         result_tags.sort(key=lambda tag: (tag.rel_path, tag.start_line))
         return self.tag_list_to_tree(result_tags)
 
-    def get_map(self, depth: int | None = None, rel_dir_path: str | None = None) -> str:
+    def get_map(
+        self,
+        depth: int | None = None,
+        rel_dir_path: str | None = None,
+        message_history: str = '',
+    ) -> str:
         # t0 = time.time()
-        ranked_tags = self.get_ranked_tags(rel_dir_path=rel_dir_path, depth=depth)
+        tracked_rel_files = self.git_utils.get_all_relative_tracked_files(depth=depth)
+        mentioned_rel_files = get_file_mentions(tracked_rel_files, message_history)
+        mentioned_identifiers = get_identifier_mentions(message_history)
+
+        ranked_tags = self.get_ranked_tags(
+            rel_dir_path=rel_dir_path,
+            depth=depth,
+            mentioned_rel_files=mentioned_rel_files,
+            mentioned_idents=mentioned_identifiers,
+        )
         tree_repr = self.tags_to_tree(ranked_tags)
         # print(f'Getting map took {time.time() - t0:.2f}s')
         return self.content_prefix + tree_repr
 
     def get_map_with_token_count(
-        self, depth: int | None = None, rel_dir_path: str | None = None
+        self,
+        depth: int | None = None,
+        rel_dir_path: str | None = None,
+        message_history: str = '',
     ) -> str:
-        tree_repr = self.get_map(depth=depth, rel_dir_path=rel_dir_path)
+        tree_repr = self.get_map(
+            depth=depth, rel_dir_path=rel_dir_path, message_history=message_history
+        )
         token_count = get_token_count_from_text(self.model_name, tree_repr)
         return f'{tree_repr}\n\nToken count: {token_count}'
 
     def get_ranked_tags(
-        self, depth: int | None = None, rel_dir_path: str | None = None
+        self,
+        depth: int | None = None,
+        rel_dir_path: str | None = None,
+        mentioned_rel_files: set | None = None,
+        mentioned_idents: set | None = None,
     ) -> list[ParsedTag]:
+        # TODO: Implement higher ranking for mentioned files and identifiers
+
         if rel_dir_path:
             all_abs_files = self.git_utils.get_absolute_tracked_files_in_directory(
                 rel_dir_path=rel_dir_path,

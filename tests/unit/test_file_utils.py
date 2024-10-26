@@ -81,6 +81,23 @@ def test_get_all_abs_tracked_files(git_utils):
     assert str(git_utils.repo_path / 'unstaged.txt') not in tracked_files
 
 
+def test_get_all_rel_tracked_files(git_utils):
+    """Test getting all relative tracked files."""
+    rel_tracked_files = git_utils.get_all_relative_tracked_files()
+
+    # Check if all expected files are present
+    expected_files = {
+        'file1.txt',
+        'file2.txt',
+        'test_dir/file3.txt',
+        'test_dir/file4.txt',
+    }
+    assert set(rel_tracked_files) == expected_files
+
+    # Verify that unstaged and untracked files are not included
+    assert str(git_utils.repo_path / 'unstaged.txt') not in rel_tracked_files
+
+
 def test_get_all_abs_tracked_files_with_depth(git_utils):
     """Test getting all tracked files with a depth limit of 1."""
     tracked_files = git_utils.get_all_absolute_tracked_files(depth=1)

@@ -26,6 +26,14 @@ class GitRepoUtils:
             and (not depth or get_depth_of_rel_path(item.path) <= depth)
         ]
 
+    def get_all_relative_tracked_files(self, depth: int | None = None) -> list[str]:
+        return [
+            item.path
+            for item in self.repo.tree().traverse()
+            if item.type == 'blob'
+            and (not depth or get_depth_of_rel_path(item.path) <= depth)
+        ]
+
     def get_all_absolute_staged_files(self) -> list[str]:
         return [
             str(self.repo_path / item.a_path) for item in self.repo.index.diff('HEAD')
