@@ -14,9 +14,22 @@ class GitRepoUtils:
         try:
             self.repo = Repo(self.repo_path)
         except Exception:
-            raise Exception(f'Could not find git repository at {abs_repo_path}')
-
-        # TODO: use BFS to traverse subdirectories to find if there are any git repositories in them
+            print(
+                f'Could not find git repository at {abs_repo_path}, trying to detect at child directories'
+            )
+            for child in self.repo_path.iterdir():
+                if child.is_dir():
+                    try:
+                        self.repo = Repo(child)
+                        self.repo_path = child
+                        print(f'Found git repository at {child}')
+                        break
+                    except Exception:
+                        print(f'Could not find git repository at child {child}')
+            if not self.repo:
+                raise Exception(
+                    'Could not find any git repository in the root directory or its children'
+                )
 
     def get_all_absolute_tracked_files(self, depth: int | None = None) -> list[str]:
         return [

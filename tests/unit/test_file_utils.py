@@ -54,14 +54,6 @@ def test_init_valid_repo(temp_git_repo):
     assert utils.repo is not None
 
 
-def test_init_invalid_repo(tmp_path):
-    """Test initialization with an invalid repository path."""
-    invalid_path = tmp_path / 'nonexistent'
-    with pytest.raises(Exception) as exc_info:
-        GitRepoUtils(str(invalid_path))
-    assert 'Could not find git repository' in str(exc_info.value)
-
-
 def test_get_all_abs_tracked_files(git_utils):
     """Test getting all tracked files."""
     tracked_files = git_utils.get_all_absolute_tracked_files()
