@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "locify"
-version = "0.0.5"
+version = "0.0.6"
 description = "A library for LLM-based agents to navigate large codebases efficiently."
 authors = ["Hoang Tran <descience.thh10@gmail.com>"]
 license = "MIT"
