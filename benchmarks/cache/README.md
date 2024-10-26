@@ -35,3 +35,19 @@ Below are benchmark results between cache vs. no cache for some methods in imple
 ### Plot for all depths
 
 [![warmup_vs_subsequent](./../../benchmarks/plots/cache_warmup_analysis.png)](warmup_vs_subsequent.png)
+
+
+## Compare warmup call vs. subsequent calls, 5 runs with tags cache enabled
+
+### Detailed Statistics for full depth with tags cache
+
+| Calls             | Cache Status  | Time     | Std Dev | Improvement            |
+|-------------------|---------------|----------|---------|------------------------|
+| First Call        | With Cache    | 18.624s  | -       | -19.3%                 |
+|                   | Without Cache | 15.607s  | -       |                        |
+| Subsequent Calls  | With Cache    | 1.182s   | 0.342s  | 91.9% (Average)        |
+|                   | Without Cache | 14.521s  | 0.102s  |                        |
+
+### Plot for all depths with tags cache
+
+[![warmup_vs_subsequent_with_tags_cache](./../../benchmarks/plots/cache_warmup_analysis_with_tags_cache.png)](warmup_vs_subsequent_with_tags_cache.png)

@@ -20,6 +20,7 @@ numpy = "*"
 pandas = "*"
 scipy = "*"
 fire = "*"
+diskcache = "^5.6.3"
 
 
 [tool.poetry.group.tests.dependencies]

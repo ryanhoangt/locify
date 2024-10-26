@@ -4,8 +4,8 @@ from locify.tree_sitter.parser import TagKind, TreeSitterParser
 
 
 @pytest.fixture
-def parser():
-    return TreeSitterParser()
+def parser(tmp_path):
+    return TreeSitterParser(cache_root_dir=str(tmp_path))
 
 
 def test_get_tags_from_python_file(parser, tmp_path):

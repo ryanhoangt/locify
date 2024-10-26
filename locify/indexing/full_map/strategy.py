@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from locify.indexing.prompts import Prompts
 from locify.tree_sitter.parser import ParsedTag, TagKind, TreeSitterParser
-from locify.utils.file import GitRepoUtils, read_text
+from locify.utils.file import GitRepoUtils, get_modified_time, read_text
 from locify.utils.llm import get_token_count_from_text
 from locify.utils.path import PathUtils
 
@@ -29,7 +29,7 @@ class FullMapStrategy:
 
         self.git_utils = GitRepoUtils(root)
         self.path_utils = PathUtils(root)
-        self.ts_parser = TreeSitterParser()
+        self.ts_parser = TreeSitterParser(self.root)
 
         # Caching
         self.file_context_cache: dict = {}  # (rel_file) -> {'context': TreeContext_obj, 'mtime': mtime})
@@ -138,7 +138,7 @@ class FullMapStrategy:
         return output
 
     def render_tree(self, abs_file: str, rel_file: str, lois: list) -> str:
-        mtime = self.git_utils.get_modified_time(abs_file)
+        mtime = get_modified_time(abs_file)
         tree_cache_key = (rel_file, tuple(sorted(lois)), mtime)
         if tree_cache_key in self.rendered_tree_cache:
             return self.rendered_tree_cache[tree_cache_key]
