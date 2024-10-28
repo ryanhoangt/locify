@@ -1,4 +1,4 @@
-# import warnings
+import warnings
 from collections import namedtuple
 from enum import Enum
 from pathlib import Path
@@ -9,7 +9,7 @@ from tree_sitter_languages import get_language, get_parser
 
 from locify.utils.file import get_modified_time, read_text
 
-# warnings.simplefilter('ignore', category=FutureWarning)
+warnings.filterwarnings('ignore', category=FutureWarning, module='tree_sitter')
 
 ParsedTag = namedtuple(
     'ParsedTag', ('rel_path', 'abs_path', 'start_line', 'node_name', 'tag_kind')

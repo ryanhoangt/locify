@@ -1,11 +1,11 @@
 import fire
 import fire.core
 
-from locify import FullMapStrategy, RepoMapStrategy
+from locify import DirectRefStrategy, FullMapStrategy, RepoMapStrategy
 
 
 def main(strategy: str, **kwargs):
-    valid_strategies = {'fullmap', 'repomap'}
+    valid_strategies = {'fullmap', 'repomap', 'directref'}
 
     if strategy not in valid_strategies:
         raise fire.core.FireError(
@@ -14,8 +14,10 @@ def main(strategy: str, **kwargs):
 
     if strategy == 'fullmap':
         return FullMapStrategy(**kwargs)
-    else:  # strategy == 'repomap'
+    elif strategy == 'repomap':
         return RepoMapStrategy(**kwargs)
+    else:
+        return DirectRefStrategy(**kwargs)
 
 
 if __name__ == '__main__':

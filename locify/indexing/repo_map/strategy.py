@@ -2,6 +2,7 @@ import math
 from collections import Counter, defaultdict
 
 import networkx as nx
+from pyvis.network import Network
 from tqdm import tqdm
 
 from locify.indexing.full_map.strategy import FullMapStrategy
@@ -25,6 +26,7 @@ class RepoMapStrategy(FullMapStrategy):
         rel_dir_path: str | None = None,
         mentioned_rel_files: set | None = None,
         mentioned_idents: set | None = None,
+        export_graph: bool = False,
     ) -> list[ParsedTag]:
         if rel_dir_path:
             all_abs_files = self.git_utils.get_absolute_tracked_files_in_directory(
@@ -84,9 +86,18 @@ class RepoMapStrategy(FullMapStrategy):
                     G.add_edge(
                         referencing_rel_file,
                         defining_rel_file,
-                        weight=num_refs * multiplier,
+                        weight=1 * multiplier,
                         identifier=ident,
                     )
+
+        if export_graph:
+            G_copy = G.copy()
+            net = Network(notebook=True, directed=True)
+            net.from_nx(G_copy)
+            for edge in net.edges:
+                edge['arrows'] = 'to'
+            net.show_buttons(filter_=['nodes'])
+            net.show('code_net.html')
 
         pers_kwargs = {}
         if personalization_dict:

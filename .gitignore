@@ -4,3 +4,9 @@
 # Python
 __pycache__/
 dist/
+
+# Cache
+.cache*
+
+# Secret
+.env
