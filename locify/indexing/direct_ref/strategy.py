@@ -17,6 +17,14 @@ class DirectRefStrategy(FullMapStrategy):
         max_map_token=1024 * 3,
     ) -> None:
         super().__init__(model_name, root, max_map_token)
+        self.litellm_config: dict | None = None
+
+    def config_litellm(self, api_key: str, model: str, base_url: str):
+        self.litellm_config = {
+            'api_key': api_key,
+            'model': model,
+            'base_url': base_url,
+        }
 
     def get_map(
         self,
@@ -32,7 +40,9 @@ class DirectRefStrategy(FullMapStrategy):
             )
         )
 
-        llm_extracted_idents = extract_identifiers_from_text(message_history)
+        llm_extracted_idents = extract_identifiers_from_text(
+            message_history, self.litellm_config
+        )
 
         defs_repr_with_prefix = self.get_definitions_tree(
             llm_extracted_idents, ident2defrels, identwrel2deftags

@@ -28,7 +28,10 @@ only the JSON output, don't include any other text.
 """
 
 
-def extract_identifiers_from_text(issue_description: str) -> set[ExtractedIdent]:
+def extract_identifiers_from_text(
+    issue_description: str,
+    litellm_config: dict | None = None,
+) -> set[ExtractedIdent]:
     messages = []
 
     messages.append(
@@ -38,10 +41,16 @@ def extract_identifiers_from_text(issue_description: str) -> set[ExtractedIdent]
         }
     )
     response = completion(
-        model=os.environ['LITELLM_MODEL'],
+        model=litellm_config['model']
+        if litellm_config
+        else os.environ['LITELLM_MODEL'],
         messages=messages,
-        api_key=os.environ['LITELLM_API_KEY'],
-        base_url=os.environ['LITELLM_BASE_URL'],
+        api_key=litellm_config['api_key']
+        if litellm_config
+        else os.environ['LITELLM_API_KEY'],
+        base_url=litellm_config['base_url']
+        if litellm_config
+        else os.environ['LITELLM_BASE_URL'],
         temperature=0.0,
         # top_p=0.7,
         max_tokens=8192,
