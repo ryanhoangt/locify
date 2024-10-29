@@ -13,11 +13,11 @@ def main(strategy: str, **kwargs):
         )
 
     if strategy == 'fullmap':
-        return FullMapStrategy(**kwargs)
+        return FullMapStrategy(show_progress=True, **kwargs)
     elif strategy == 'repomap':
-        return RepoMapStrategy(**kwargs)
+        return RepoMapStrategy(show_progress=True, **kwargs)
     else:
-        return DirectRefStrategy(**kwargs)
+        return DirectRefStrategy(show_progress=True, **kwargs)
 
 
 if __name__ == '__main__':

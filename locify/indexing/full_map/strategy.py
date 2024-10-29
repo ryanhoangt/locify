@@ -19,6 +19,7 @@ class FullMapStrategy:
         root='./',
         max_map_token=1024 * 3,
         content_prefix=Prompts.repo_content_prefix,
+        show_progress=False,
     ) -> None:
         if not Path(root).is_absolute():
             root = str(Path(root).resolve())
@@ -27,6 +28,7 @@ class FullMapStrategy:
         self.model_name = model_name
         self.max_map_token = max_map_token
         self.content_prefix = content_prefix
+        self.show_progress = show_progress
 
         self.git_utils = GitRepoUtils(root)
         self.path_utils = PathUtils(root)
@@ -119,7 +121,12 @@ class FullMapStrategy:
             set
         )  # (relative file, symbol identifier) -> set of its tags
 
-        for abs_file in tqdm(all_abs_files, desc='Parsing tags', unit='file'):
+        all_abs_files_iter = (
+            tqdm(all_abs_files, desc='Parsing tags', unit='file')
+            if self.show_progress
+            else all_abs_files
+        )
+        for abs_file in all_abs_files_iter:
             rel_file = self.path_utils.get_relative_path_str(abs_file)
             parsed_tags = self.ts_parser.get_tags_from_file(abs_file, rel_file)
 

@@ -15,8 +15,9 @@ class DirectRefStrategy(FullMapStrategy):
         model_name='gpt-4o',
         root='./',
         max_map_token=1024 * 3,
+        show_progress=False,
     ) -> None:
-        super().__init__(model_name, root, max_map_token)
+        super().__init__(model_name, root, max_map_token, show_progress)
         self.litellm_config: dict | None = None
 
     def config_litellm(self, api_key: str, model: str, base_url: str):
@@ -90,7 +91,12 @@ class DirectRefStrategy(FullMapStrategy):
             set
         )  # (relative file, symbol identifier) -> set of its REF tags
 
-        for abs_file in tqdm(all_abs_files, desc='Parsing tags', unit='file'):
+        all_abs_files_iter = (
+            tqdm(all_abs_files, desc='Parsing tags', unit='file')
+            if self.show_progress
+            else all_abs_files
+        )
+        for abs_file in all_abs_files_iter:
             rel_file = self.path_utils.get_relative_path_str(abs_file)
             parsed_tags = self.ts_parser.get_tags_from_file(abs_file, rel_file)
 

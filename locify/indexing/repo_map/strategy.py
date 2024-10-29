@@ -17,8 +17,9 @@ class RepoMapStrategy(FullMapStrategy):
         root='./',
         max_map_token=1024 * 3,
         content_prefix=Prompts.repo_content_prefix,
+        show_progress=False,
     ) -> None:
-        super().__init__(model_name, root, max_map_token, content_prefix)
+        super().__init__(model_name, root, max_map_token, content_prefix, show_progress)
 
     def get_ranked_tags(
         self,
@@ -53,7 +54,12 @@ class RepoMapStrategy(FullMapStrategy):
         personalization_dict = {}
         personalization_val = 100 / num_files
 
-        for abs_file in tqdm(all_abs_files, desc='Parsing tags', unit='file'):
+        all_abs_files_iter = (
+            tqdm(all_abs_files, desc='Parsing tags', unit='file')
+            if self.show_progress
+            else all_abs_files
+        )
+        for abs_file in all_abs_files_iter:
             rel_file = self.path_utils.get_relative_path_str(abs_file)
 
             if rel_file in mentioned_rel_files:
