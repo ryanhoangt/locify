@@ -2,12 +2,13 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Literal, get_args
 
+from locify.editor.config import SNIPPET_CONTEXT_WINDOW
 from locify.editor.exceptions import (
     EditorToolParameterInvalidError,
     EditorToolParameterMissingError,
     ToolError,
 )
-from locify.editor.results import CLIResult, ToolResult
+from locify.editor.results import CLIResult, ToolResult, maybe_truncate
 from locify.utils.file import read_file
 
 Command = Literal[
@@ -34,7 +35,6 @@ class OHEditor:
     """
 
     TOOL_NAME = 'oh_editor'
-    SNIPPET_LINES = 4
 
     def __init__(self) -> None:
         self._file_history: dict[Path, list[str]] = defaultdict(list)
@@ -82,8 +82,49 @@ class OHEditor:
         """
         Implement the str_replace command, which replaces old_str with new_str in the file content.
         """
-        # TODO:
-        raise NotImplementedError
+        file_content = read_file(path)
+        old_str = old_str.expandtabs()
+        new_str = new_str.expandtabs() if new_str is not None else ''
+
+        # Check if old_str is unique in the file
+        occurrences = file_content.count(old_str)
+        if occurrences == 0:
+            raise ToolError(
+                f'No replacement was performed, old_str `{old_str}` did not appear verbatim in {path}.'
+            )
+        if occurrences > 1:
+            file_content_lines = file_content.split('\n')
+            line_numbers = [
+                idx + 1
+                for idx, line in enumerate(file_content_lines)
+                if old_str in line
+            ]
+            raise ToolError(
+                f'No replacement was performed. Multiple occurrences of old_str `{old_str}` in lines {line_numbers}. Please ensure it is unique.'
+            )
+
+        # Replace old_str with new_str
+        new_file_content = file_content.replace(old_str, new_str)
+
+        # Write the new content to the file
+        self.write_file(path, new_file_content)
+
+        # Save the content to history
+        self._file_history[path].append(new_file_content)
+
+        # Create a snippet of the edited section
+        replacement_line = file_content.split(old_str)[0].count('\n')
+        start_line = max(0, replacement_line - SNIPPET_CONTEXT_WINDOW)
+        end_line = replacement_line + SNIPPET_CONTEXT_WINDOW + new_str.count('\n')
+        snippet = '\n'.join(new_file_content.split('\n')[start_line : end_line + 1])
+
+        # Prepare the success message
+        success_msg = f'The file {path} has been edited. '
+        success_msg += self._make_output(
+            snippet, f'a snippet of {path}', start_line + 1
+        )
+        success_msg += 'Review the changes and make sure they are as expected. Edit the file again if necessary.'
+        return CLIResult(output=success_msg)
 
     def view(self, path: Path, view_range: list[int] | None = None) -> CLIResult:
         """
@@ -96,8 +137,10 @@ class OHEditor:
         """
         Write the content of a file to a given path; raise a ToolError if an error occurs.
         """
-        # TODO:
-        raise NotImplementedError
+        try:
+            path.write_text(file_text)
+        except Exception as e:
+            raise ToolError(f'Ran into {e} while trying to write to {path}') from None
 
     def insert(self, path: Path, insert_line: int, new_str: str) -> CLIResult:
         """
@@ -128,10 +171,10 @@ class OHEditor:
             + file_text_lines[insert_line:]
         )
         snippet_lines = (
-            file_text_lines[max(0, insert_line - self.SNIPPET_LINES) : insert_line]
+            file_text_lines[max(0, insert_line - SNIPPET_CONTEXT_WINDOW) : insert_line]
             + new_str_lines
             + file_text_lines[
-                insert_line : min(num_lines, insert_line + self.SNIPPET_LINES)
+                insert_line : min(num_lines, insert_line + SNIPPET_CONTEXT_WINDOW)
             ]
         )
         new_file_text = '\n'.join(new_file_text_lines)
@@ -144,7 +187,7 @@ class OHEditor:
         success_message += self._make_output(
             snippet,
             'a snippet of the edited file',
-            max(1, insert_line - self.SNIPPET_LINES + 1),
+            max(1, insert_line - SNIPPET_CONTEXT_WINDOW + 1),
         )
         success_message += 'Review the changes and make sure they are as expected (correct indentation, no duplicate lines, etc). Edit the file again if necessary.'
         return CLIResult(output=success_message)
@@ -205,6 +248,18 @@ class OHEditor:
         """
         Generate output for the CLI based on the content of a code snippet.
         """
-        # TODO:
-        raise NotImplementedError
-        raise NotImplementedError
+        snippet_content = maybe_truncate(snippet_content)
+        if expand_tabs:
+            snippet_content = snippet_content.expandtabs()
+
+        snippet_content = '\n'.join(
+            [
+                f'{i + start_line:6}\t{line}'
+                for i, line in enumerate(snippet_content.split('\n'))
+            ]
+        )
+        return (
+            f"Here's the result of running `cat -n` on {snippet_description}:\n"
+            + snippet_content
+            + '\n'
+        )
