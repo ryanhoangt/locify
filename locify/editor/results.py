@@ -10,7 +10,6 @@ class ToolResult:
 
     output: str | None = None
     error: str | None = None
-    # TODO: implement the ToolResult class
 
     def __bool__(self):
         return any(getattr(self, field.name) for field in fields(self))
