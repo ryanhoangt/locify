@@ -161,7 +161,3 @@ def read_text(abs_path: str) -> str:
 
     with open(abs_path, 'r') as f:
         return f.read()
-
-
-def read_file(path: Path) -> str:
-    return path.read_text()

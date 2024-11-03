@@ -9,7 +9,7 @@ from locify.editor.exceptions import (
     ToolError,
 )
 from locify.editor.results import CLIResult, ToolResult, maybe_truncate
-from locify.utils.file import read_file
+from locify.editor.shell import run_shell_cmd
 
 Command = Literal[
     'view',
@@ -82,7 +82,7 @@ class OHEditor:
         """
         Implement the str_replace command, which replaces old_str with new_str in the file content.
         """
-        file_content = read_file(path)
+        file_content = self.read_file(path)
         old_str = old_str.expandtabs()
         new_str = new_str.expandtabs() if new_str is not None else ''
 
@@ -130,8 +130,64 @@ class OHEditor:
         """
         View the contents of a file or a directory.
         """
-        # TODO:
-        raise NotImplementedError
+        if path.is_dir():
+            if view_range:
+                raise EditorToolParameterInvalidError(
+                    'view_range',
+                    view_range,
+                    'The `view_range` parameter is not allowed when `path` points to a directory.',
+                )
+
+            _, stdout, stderr = run_shell_cmd(
+                rf"find {path} -maxdepth 2 -not -path '*/\.*'"
+            )
+            if not stderr:
+                stdout = f"Here's the files and directories up to 2 levels deep in {path}, excluding hidden items:\n{stdout}\n"
+            return CLIResult(output=stdout, error=stderr)
+
+        file_content = self.read_file(path)
+        start_line = 1
+        if not view_range:
+            return CLIResult(
+                output=self._make_output(file_content, str(path), start_line)
+            )
+
+        if len(view_range) != 2 or not all(isinstance(i, int) for i in view_range):
+            raise EditorToolParameterInvalidError(
+                'view_range',
+                view_range,
+                'It should be a list of two integers.',
+            )
+
+        file_content_lines = file_content.split('\n')
+        num_lines = len(file_content_lines)
+        start_line, end_line = view_range
+        if start_line < 1 or start_line > num_lines:
+            raise EditorToolParameterInvalidError(
+                'view_range',
+                view_range,
+                f'Its first element `{start_line}` should be within the range of lines of the file: {[1, num_lines]}.',
+            )
+
+        if end_line > num_lines:
+            raise EditorToolParameterInvalidError(
+                'view_range',
+                view_range,
+                f'Its second element `{end_line}` should be smaller than the number of lines in the file: `{num_lines}`.',
+            )
+
+        if end_line != -1 and end_line < start_line:
+            raise EditorToolParameterInvalidError(
+                'view_range',
+                view_range,
+                f'Its second element `{end_line}` should be greater than or equal to the first element `{start_line}`.',
+            )
+
+        if end_line == -1:
+            file_content = '\n'.join(file_content_lines[start_line - 1 :])
+        else:
+            file_content = '\n'.join(file_content_lines[start_line - 1 : end_line])
+        return CLIResult(output=self._make_output(file_content, str(path), start_line))
 
     def write_file(self, path: Path, file_text: str) -> None:
         """
@@ -147,7 +203,7 @@ class OHEditor:
         Implement the insert command, which inserts new_str at the specified line in the file content.
         """
         try:
-            file_text = read_file(path)
+            file_text = self.read_file(path)
         except Exception as e:
             raise ToolError(f'Ran into {e} while trying to read {path}') from None
 
@@ -237,6 +293,15 @@ class OHEditor:
         return CLIResult(
             output=f'Last edit to {path} undone successfully. {self._make_output(old_text, str(path))}'
         )
+
+    def read_file(self, path: Path) -> str:
+        """
+        Read the content of a file from a given path; raise a ToolError if an error occurs.
+        """
+        try:
+            return path.read_text()
+        except Exception as e:
+            raise ToolError(f'Ran into {e} while trying to read {path}') from None
 
     def _make_output(
         self,

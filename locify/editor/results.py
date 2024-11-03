@@ -9,6 +9,7 @@ class ToolResult:
     """Represents the result of a tool execution."""
 
     output: str | None = None
+    error: str | None = None
     # TODO: implement the ToolResult class
 
     def __bool__(self):
